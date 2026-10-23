@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduSmart - Nền Tảng Học Tập, Quản Lý Lớp & Chấm Điểm AI</title>
+  <meta name="description" content="Nền tảng quản lý học tập thông minh tích hợp giao bài, làm bài trực tuyến, tự động chấm điểm với AI, quản lý điểm thưởng và phân tích tiến độ học sinh.">
+
+  <!-- Google Fonts: Be Vietnam Pro & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="./all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-icon">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div class="brand-info">
+          <h1>
+            EduSmart
+            <span class="badge-ai"><i class="fa-solid fa-sparkles text-[10px]"></i> AI Powered</span>
+          </h1>
+          <p class="brand-tagline">Quản lý học tập & Tự động chấm điểm thông minh</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Role Switcher -->
+        <div class="role-switcher" title="Chuyển góc nhìn Giáo viên / Học sinh">
+          <button type="button" class="role-btn active" data-role="teacher">
+            <i class="fa-solid fa-chalkboard-user"></i>
+            <span>Giáo viên</span>
+          </button>
+          <button type="button" class="role-btn" data-role="student">
+            <i class="fa-solid fa-user-graduate"></i>
+            <span>Học sinh</span>
+          </button>
+        </div>
+
+        <!-- AI Tutor Button -->
+        <button type="button" class="btn-ai-tutor" id="btn-open-ai-tutor" title="Mở Trợ lý Gia sư AI">
+          <i class="fa-solid fa-robot"></i>
+          <span>Gia sư AI</span>
+        </button>
+
+        <!-- Settings (API Key) Button with Red Text Badge as required by AI_INSTRUCTIONS.md -->
+        <button type="button" class="btn-api-key-header" id="btn-settings" title="Cài đặt Gemini AI Key & Chọn Model">
+          <div class="api-key-btn-inner">
+            <i class="fa-solid fa-key text-amber-500"></i>
+            <span class="api-key-btn-text">Settings (API Key)</span>
+            <span class="api-key-tag-red">Lấy API key để sử dụng app</span>
+          </div>
+        </button>
+
+        <!-- Backup & Sound Controls -->
+        <button type="button" class="btn-icon" id="btn-backup" title="Sao lưu & Phục hồi dữ liệu">
+          <i class="fa-solid fa-database text-sm"></i>
+        </button>
+
+        <button type="button" class="btn-icon" id="btn-sound-toggle" title="Bật/Tắt âm thanh hiệu ứng">
+          <i class="fa-solid fa-volume-high text-blue-600 text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sub Navigation Bar (Only in Teacher Mode) -->
+  <nav class="sub-nav">
+    <div class="nav-container">
+      <button type="button" class="nav-tab active" data-tab="overview">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Tổng quan & Báo cáo</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="roster">
+        <i class="fa-solid fa-users"></i>
+        <span>Lớp học & Điểm thưởng</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="assignments">
+        <i class="fa-solid fa-file-pen"></i>
+        <span>Soạn đề & Giao bài</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="lessons">
+        <i class="fa-solid fa-clapperboard"></i>
+        <span>Kho Bài Giảng & Video</span>
+        <span class="tab-badge">5</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="grading">
+        <i class="fa-solid fa-clipboard-check"></i>
+        <span>Chấm bài & Phản hồi AI</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+
+    <!-- Global API Error Banner (AI_INSTRUCTIONS.md requirement 31) -->
+    <div class="api-error-banner" id="global-api-error-banner">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-rose-600 text-lg"></i>
+          <div>
+            <strong>LỖI GỌI API GEMINI:</strong>
+            <span id="api-error-message-text" class="font-mono ml-1"></span>
+          </div>
+        </div>
+        <button type="button" class="btn-primary text-xs py-1 px-3 bg-rose-600 hover:bg-rose-700" onclick="app.openModal('modal-settings')">
+          <i class="fa-solid fa-key mr-1"></i> Đổi API Key Khác
+        </button>
+      </div>
+    </div>
+    
+    <!-- ==================== TEACHER VIEW CONTAINER ==================== -->
+    <div class="teacher-view-container">
+
+      <!-- TAB 1: OVERVIEW & REPORTS -->
+      <section class="tab-panel active" id="tab-overview">
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+          <div class="hero-tag">
+            <i class="fa-solid fa-sparkles text-amber-300"></i>
+            <span>Nền tảng Quản lý Học tập & Khảo thí Thế hệ mới</span>
+          </div>
+          <h2 class="hero-title">Bảng Điều Khiển Giáo Viên EduSmart</h2>
+          <p class="hero-desc">
+            Theo dõi tiến độ học sinh thời gian thực, quản lý điểm thưởng động lực, giao bài và tự động chấm điểm với trợ lý Gemini AI thông minh.
+          </p>
+          <div class="hero-actions">
+            <button type="button" class="btn-hero btn-hero-white" id="btn-quick-new-exam">
+              <i class="fa-solid fa-plus-circle text-blue-600"></i>
+              <span>Giao Bài Mới (Có AI Soạn Đề)</span>
+            </button>
+            <button type="button" class="btn-hero btn-hero-indigo" id="btn-quick-new-lesson">
+              <i class="fa-solid fa-clapperboard"></i>
+              <span>Đưa Bài Giảng / Video Lên</span>
+            </button>
+            <button type="button" class="btn-hero btn-hero-gold" id="btn-quick-stars">
+              <i class="fa-solid fa-award"></i>
+              <span>Cộng / Trừ Điểm Thưởng</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Metric Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Tổng Học Sinh</span>
+              <div class="metric-icon-box bg-blue-50 text-blue-600">
+                <i class="fa-solid fa-users"></i>
+              </div>
+            </div>
+            <div class="metric-value" id="kpi-total-students">8</div>
+            <div class="metric-sub text-emerald-600">
+              <i class="fa-solid fa-circle-check text-[10px]"></i>
+              <span>Đang hoạt động trong 3 lớp</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Bài Đã Giao</span>
+              <div class="metric-icon-box bg-indigo-50 text-indigo-600">
+                <i class="fa-solid fa-file-lines"></i>
+              </div>
+            </div>
+            <div class="metric-value" id="kpi-total-assignments">3</div>
+            <div class="metric-sub text-blue-600">
+              <i class="fa-solid fa-circle-play text-[10px]"></i>
+              <span>Đang mở kiểm tra trực tuyến</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Lượt Nộp Bài</span>
+              <div class="metric-icon-box bg-emerald-50 text-emerald-600">
+                <i class="fa-solid fa-square-check"></i>
+              </div>
+            </div>
+            <div class="metric-value" id="kpi-total-submissions">3</div>
+            <div class="metric-sub text-emerald-600">
+              <i class="fa-solid fa-bolt text-[10px]"></i>
+              <span>100% tự động chấm tức thì</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Điểm Trung Bình</span>
+              <div class="metric-icon-box bg-amber-50 text-amber-600">
+                <i class="fa-solid fa-chart-line"></i>
+              </div>
+            </div>
+            <div class="metric-value text-amber-600" id="kpi-avg-score">9.3 / 10</div>
+            <div class="metric-sub text-amber-700">
+              <i class="fa-solid fa-fire text-[10px]"></i>
+              <span>Tỷ lệ đạt chuẩn: 92%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-Column Analytics Grid -->
+        <div class="dashboard-grid">
+          <!-- Leaderboard Panel -->
+          <div class="card-panel">
+            <div>
+              <div class="panel-header">
+                <div class="panel-title-group">
+                  <div class="panel-icon-box bg-amber-100 text-amber-600">
+                    <i class="fa-solid fa-trophy"></i>
+                  </div>
+                  <div>
+                    <h3 class="panel-title">Bảng Vinh Danh Học Sinh Tích Cực</h3>
+                    <p class="panel-subtitle">Dẫn đầu về điểm thưởng động lực (Gamification)</p>
+                  </div>
+                </div>
+                <button type="button" class="panel-link" onclick="app.switchTab('roster')">Xem tất cả</button>
+              </div>
+
+              <div class="leaderboard-list" id="leaderboard-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>Đã ghi nhận <strong>12</strong> lượt cộng/trừ điểm thưởng</span>
+              <button type="button" class="text-amber-600 font-bold hover:underline" onclick="app.openAdjustStarModal()">+ Cộng điểm ngay</button>
+            </div>
+          </div>
+
+          <!-- Recent Submissions Panel -->
+          <div class="card-panel">
+            <div>
+              <div class="panel-header">
+                <div class="panel-title-group">
+                  <div class="panel-icon-box bg-blue-100 text-blue-600">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                  </div>
+                  <div>
+                    <h3 class="panel-title">Bài Làm Nộp Gần Đây</h3>
+                    <p class="panel-subtitle">Xem kết quả chi tiết & gửi phản hồi sư phạm</p>
+                  </div>
+                </div>
+                <button type="button" class="panel-link" onclick="app.switchTab('grading')">Tất cả bài nộp</button>
+              </div>
+
+              <div class="space-y-2.5" id="recent-submissions-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>Tự động chấm trắc nghiệm chuẩn xác 100%</span>
+              <button type="button" class="text-blue-600 font-bold hover:underline" onclick="app.switchTab('grading')">Vào chấm bài & phản hồi AI →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weakness Radar & Advice -->
+        <div class="weakness-box">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center">
+                <i class="fa-solid fa-magnifying-glass-chart text-sm"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-slate-800">Phân Tích Chủ Đề Còn Yếu & Lời Khuyên Ôn Tập</h3>
+                <p class="text-[11px] text-slate-500">Dữ liệu phân tích tự động từ các câu học sinh làm sai nhiều nhất</p>
+              </div>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-100 font-semibold text-slate-600">Thời gian thực</span>
+          </div>
+
+          <div class="weakness-grid" id="weaknesses-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: ROSTER & GAMIFICATION -->
+      <section class="tab-panel" id="tab-roster">
+        <div class="roster-header-bar">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-800">Danh Sách Học Sinh & Điểm Thưởng</h3>
+            <p class="text-xs text-slate-500">Quản lý khen thưởng điểm sao (⭐), danh hiệu và mức độ chuyên cần</p>
+          </div>
+          <div class="class-filters">
+            <button type="button" class="btn-filter active" data-class="all">Tất cả lớp (8)</button>
+            <button type="button" class="btn-filter" data-class="10A1">Lớp 10A1</button>
+            <button type="button" class="btn-filter" data-class="10A2">Lớp 10A2</button>
+            <button type="button" class="btn-filter" data-class="11B1">Lớp 11B1</button>
+          </div>
+        </div>
+
+        <div class="roster-cards-grid" id="roster-grid-container">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- TAB 3: ASSIGNMENTS & AI EXAM CREATOR -->
+      <section class="tab-panel" id="tab-assignments">
+        <div class="section-header-row">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-800">Quản Lý Đề Kiểm Tra & Bài Tập</h3>
+            <p class="text-xs text-slate-500">Tạo đề thi trắc nghiệm, tự luận, xuất file in ấn chuẩn Word (.docx) và giao bài cho lớp</p>
+          </div>
+          <button type="button" class="btn-primary" onclick="app.openModal('modal-create-assignment')">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Soạn Đề Mới (Hỗ trợ AI)</span>
+          </button>
+        </div>
+
+        <table class="assignments-table">
+          <thead>
+            <tr>
+              <th>Tiêu Đề Đề Thi</th>
+              <th>Môn Học</th>
+              <th>Lớp Áp Dụng</th>
+              <th>Hạn Nộp</th>
+              <th>Lượt Nộp</th>
+              <th>Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody id="assignments-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- TAB 4: LESSONS & VIDEOS -->
+      <section class="tab-panel" id="tab-lessons">
+        <div class="section-header-row">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-800">Kho Bài Giảng & Video Tương Tác</h3>
+            <p class="text-xs text-slate-500">Bài giảng số hóa, video minh họa và xuất đề cương Slide bài giảng PowerPoint (.pptx)</p>
+          </div>
+          <button type="button" class="btn-primary" onclick="app.openModal('modal-create-lesson')">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>Thêm Bài Giảng Mới</span>
+          </button>
+        </div>
+
+        <div class="lessons-grid" id="lessons-grid-container">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- TAB 5: GRADING & AI FEEDBACK -->
+      <section class="tab-panel" id="tab-grading">
+        <div class="section-header-row">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-800">Chấm Bài & Phản Hồi Sư Phạm AI</h3>
+            <p class="text-xs text-slate-500">Hệ thống AI tự động phân tích câu đúng/sai, sinh lời nhận xét khích lệ và chỉ ra hướng cải thiện</p>
+          </div>
+        </div>
+
+        <table class="assignments-table">
+          <thead>
+            <tr>
+              <th>Học Sinh</th>
+              <th>Tên Bài Kiểm Tra</th>
+              <th>Điểm Số</th>
+              <th>Nhận Xét Sư Phạm AI</th>
+              <th>Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody id="grading-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+
+    <!-- ==================== STUDENT VIEW CONTAINER ==================== -->
+    <div class="student-view-container">
+      <!-- Student Banner -->
+      <div class="student-hero-banner">
+        <div class="student-profile-badge">
+          <img src="./photo-1535713875002-d1d0cf377fde" alt="Student Profile" class="student-profile-pic" id="student-profile-img">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-xl font-black text-white" id="student-profile-name">Nguyễn Văn An</h2>
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-400 text-amber-950">Học sinh</span>
+            </div>
+            <p class="text-xs text-indigo-100 mt-1" id="student-profile-class">Lớp 10A1 • Thợ Săn Điểm 10</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+          <div class="text-center">
+            <div class="text-2xl font-black text-amber-300" id="student-profile-stars">245</div>
+            <span class="text-xs text-indigo-200">Điểm sao ⭐</span>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-black text-white" id="student-profile-streak">14 ngày</div>
+            <span class="text-xs text-indigo-200">Chuỗi học tập 🔥</span>
+          </div>
+          <div>
+            <label class="text-[11px] text-indigo-200 block mb-1">Mô phỏng học sinh:</label>
+            <select class="form-select text-xs py-1 px-2" id="select-current-student">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Content Header -->
+      <div class="section-header-row">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-800">Bài Tập & Kiểm Tra Cần Hoàn Thành</h3>
+          <p class="text-xs text-slate-500">Làm bài trực tuyến, nhận điểm số và nhận xét từ AI ngay sau khi nộp</p>
+        </div>
+      </div>
+
+      <!-- Student Quiz Cards -->
+      <div class="roster-cards-grid" id="student-quiz-list">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-slate-700">EduSmart LMS Platform</span>
+        <span>•</span>
+        <span>Nền tảng kiểm tra, đánh giá & quản lý học tập số hóa Việt Nam (Tích hợp 14 Skills Giáo Dục)</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button type="button" class="text-blue-600 hover:underline flex items-center space-x-1" onclick="app.openModal('modal-settings')">
+          <i class="fa-solid fa-sparkles text-[10px]"></i>
+          <span>Cài đặt Gemini AI</span>
+        </button>
+        <span>•</span>
+        <button type="button" class="text-slate-600 hover:underline" onclick="app.openModal('modal-backup')">
+          Sao lưu dữ liệu
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== MODALS & DRAWERS ==================== -->
+
+  <!-- Modal: Adjust Stars (Gamification) -->
+  <div class="modal-overlay" id="modal-adjust-stars">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-award text-amber-500 mr-2"></i> Cộng / Trừ Điểm Thưởng Sao</h3>
+        <button type="button" class="modal-close-btn" data-close-modal="modal-adjust-stars">&times;</button>
+      </div>
+      <form id="form-adjust-star">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Chọn học sinh:</label>
+            <select class="form-select" id="star-student-select" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Số điểm sao thưởng (+/-):</label>
+            <input type="number" class="form-input" id="star-amount-input" value="10" required>
+            <small class="text-xs text-slate-500">Nhập số dương để cộng (VD: 10), số âm để trừ (VD: -5).</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lý do sư phạm / Khen thưởng:</label>
+            <input type="text" class="form-input" id="star-reason-input" placeholder="VD: Phát biểu bài xuất sắc, làm bài đúng giờ...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="modal-adjust-stars">Hủy</button>
+          <button type="submit" class="btn-primary">Xác Nhận</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Create Assignment with AI -->
+  <div class="modal-overlay" id="modal-create-assignment">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-wand-magic-sparkles text-indigo-600 mr-2"></i> Soạn Đề Kiểm Tra & Bài Tập</h3>
+        <button type="button" class="modal-close-btn" data-close-modal="modal-create-assignment">&times;</button>
+      </div>
+      <form id="form-create-assignment">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Tên bài kiểm tra:</label>
+            <input type="text" class="form-input" id="asn-title-input" required placeholder="VD: Khảo sát 15 phút: Đại số chương 2">
+          </div>
+          <div class="grid grid-cols-2 gap-3" style="display: grid; grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label">Môn học:</label>
+              <select class="form-select" id="asn-subject-select">
+                <option value="Toán học">Toán học</option>
+                <option value="Vật lý">Vật lý</option>
+                <option value="Tiếng Anh">Tiếng Anh</option>
+                <option value="Hóa học">Hóa học</option>
+                <option value="Tin học">Tin học</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Lớp áp dụng:</label>
+              <select class="form-select" id="asn-class-select">
+                <option value="10A1">Lớp 10A1</option>
+                <option value="10A2">Lớp 10A2</option>
+                <option value="11B1">Lớp 11B1</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3" style="display: grid; grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label">Thời gian làm (phút):</label>
+              <input type="number" class="form-input" id="asn-duration-input" value="15" min="5" max="90">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hạn nộp bài:</label>
+              <input type="date" class="form-input" id="asn-due-date" value="2026-11-05">
+            </div>
+          </div>
+
+          <!-- AI Generator Box -->
+          <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
+                <i class="fa-solid fa-sparkles text-amber-500"></i> AI Soạn Đề Tự Động
+              </span>
+              <button type="button" class="btn-primary text-xs py-1 px-3" id="btn-ai-generate-exam">
+                <i class="fa-solid fa-bolt"></i> Sinh Đề Bằng AI
+              </button>
+            </div>
+            <input type="text" class="form-input text-xs" id="ai-exam-topic" placeholder="Nhập chủ đề kiến thức (VD: Khảo sát hàm số bậc hai parabol, thì hiện tại hoàn thành...)">
+            <div id="ai-gen-status" class="mt-2 text-xs text-indigo-800" style="display: none;"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="modal-create-assignment">Đóng</button>
+          <button type="submit" class="btn-primary">Lưu & Giao Bài</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Take Quiz (Student) -->
+  <div class="modal-overlay" id="modal-take-quiz">
+    <div class="modal-card" style="max-width: 700px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="quiz-modal-title">Làm Bài Kiểm Tra</h3>
+          <span class="text-xs text-slate-500">Trả lời các câu hỏi và bấm Nộp bài</span>
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-slate-400 block">Thời gian còn lại</span>
+          <span class="text-lg font-black text-primary-600" id="quiz-countdown-timer">15:00</span>
+        </div>
+      </div>
+      <div class="modal-body" id="quiz-questions-body">
+        <!-- Dynamically populated -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-close-modal="modal-take-quiz">Hủy Bỏ</button>
+        <button type="button" class="btn-primary" onclick="app.submitStudentQuiz()">
+          <i class="fa-solid fa-paper-plane mr-1"></i> Nộp Bài Kiểm Tra
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Submission Detail -->
+  <div class="modal-overlay" id="modal-submission-detail">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="sub-detail-student">Chi Tiết Bài Nộp</h3>
+          <span class="text-xs text-slate-500" id="sub-detail-title"></span>
+        </div>
+        <button type="button" class="modal-close-btn" data-close-modal="modal-submission-detail">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold text-emerald-800">Kết quả đánh giá:</span>
+            <div class="text-2xl font-black text-emerald-600" id="sub-detail-score">10/10 điểm</div>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl">
+            <i class="fa-solid fa-check-double"></i>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Nhận Xét Sư Phạm Từ Gemini AI</h4>
+          <p class="text-xs text-slate-700 leading-relaxed italic" id="sub-detail-ai-feedback"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-primary" data-close-modal="modal-submission-detail">Đã Xem</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Video Lesson Player -->
+  <div class="modal-overlay" id="modal-video-lesson">
+    <div class="modal-card" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="video-modal-title">Xem Bài Giảng</h3>
+        <button type="button" class="modal-close-btn" data-close-modal="modal-video-lesson">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; background: #000;">
+          <iframe id="lesson-video-iframe" style="position: absolute; top:0; left: 0; width: 100%; height: 100%; border: 0;" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <p class="text-xs text-slate-600 mt-2" id="video-modal-desc"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-primary" data-close-modal="modal-video-lesson">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings (Model & API Key) -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title"><i class="fa-solid fa-key text-amber-500 mr-2"></i> Thiết Lập Model & API Key Gemini</h3>
+          <span class="text-xs text-slate-500">Cấu hình API Key và Model AI ưu tiên với cơ chế Fallback tự động</span>
+        </div>
+        <button type="button" class="modal-close-btn" data-close-modal="modal-settings" id="btn-close-settings-modal">&times;</button>
+      </div>
+      <form id="form-settings">
+        <div class="modal-body">
+          <!-- Step 1: Guide to get API Key -->
+          <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-xl">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <span class="text-xs font-black text-rose-700 uppercase tracking-wide flex items-center gap-1.5">
+                  <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Hướng Dẫn Lấy API Key Miễn Phí
+                </span>
+                <p class="text-xs text-slate-700 mt-1 leading-relaxed">
+                  Để sử dụng toàn bộ tính năng AI (Soạn đề, Chấm bài, Gia sư), bạn cần nhập API Key Gemini của mình.
+                </p>
+              </div>
+              <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener noreferrer" class="btn-primary text-xs whitespace-nowrap bg-rose-600 hover:bg-rose-700 shadow-sm py-2 px-3">
+                <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Lấy API Key Tại Đây
+              </a>
+            </div>
+          </div>
+
+          <!-- Step 2: Input API Key -->
+          <div class="form-group">
+            <label class="form-label flex items-center justify-between">
+              <span>Google Gemini API Key:</span>
+              <span class="text-[11px] text-slate-400">Lưu an toàn trong LocalStorage</span>
+            </label>
+            <div style="position: relative;">
+              <input type="password" class="form-input w-full pr-10" id="settings-gemini-key" placeholder="Dán API Key (bắt đầu bằng AIzaSy...) vào đây" required>
+              <button type="button" id="btn-toggle-key-visibility" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted);">
+                <i class="fa-solid fa-eye text-sm"></i>
+              </button>
+            </div>
+            <small class="text-xs text-slate-500">Nếu hết quota, bạn có thể dễ dàng thay key mới tại đây bất cứ lúc nào.</small>
+          </div>
+
+          <!-- Step 3: Model Selection Cards (Order specified in AI_INSTRUCTIONS.md) -->
+          <div class="form-group">
+            <label class="form-label flex items-center justify-between">
+              <span>Danh Sách Chọn Model AI (Theo thứ tự ưu tiên):</span>
+              <span class="text-[11px] text-primary-600 font-semibold"><i class="fa-solid fa-rotate mr-1"></i> Tự động chuyển model khi lỗi</span>
+            </label>
+            
+            <div class="model-cards-grid">
+              <!-- Card 1: gemini-3-flash-preview (Default) -->
+              <div class="model-card-item selected" data-model="gemini-3-flash-preview" onclick="app.selectModel('gemini-3-flash-preview')">
+                <div>
+                  <span class="model-card-badge badge-default">Mặc định (Default)</span>
+                  <div class="model-card-name">gemini-3-flash-preview</div>
+                  <p class="model-card-desc">Tốc độ phản hồi cực nhanh, tối ưu hóa độ trễ, hoàn hảo cho tạo quiz và chat.</p>
+                </div>
+                <div class="model-card-check"><i class="fa-solid fa-circle-check"></i></div>
+              </div>
+
+              <!-- Card 2: gemini-3-pro-preview -->
+              <div class="model-card-item" data-model="gemini-3-pro-preview" onclick="app.selectModel('gemini-3-pro-preview')">
+                <div>
+                  <span class="model-card-badge badge-pro">Suy luận nâng cao</span>
+                  <div class="model-card-name">gemini-3-pro-preview</div>
+                  <p class="model-card-desc">Khả năng lập luận sư phạm sâu, giải thích bài toán khó và chấm tự luận chi tiết.</p>
+                </div>
+                <div class="model-card-check"><i class="fa-solid fa-circle-check"></i></div>
+              </div>
+
+              <!-- Card 3: gemini-2.5-flash -->
+              <div class="model-card-item" data-model="gemini-2.5-flash" onclick="app.selectModel('gemini-2.5-flash')">
+                <div>
+                  <span class="model-card-badge badge-fallback">Dự phòng ổn định</span>
+                  <div class="model-card-name">gemini-2.5-flash</div>
+                  <p class="model-card-desc">Phiên bản ổn định cao, đóng vai trò fallback khi các model 3.0 đạt giới hạn quota.</p>
+                </div>
+                <div class="model-card-check"><i class="fa-solid fa-circle-check"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fallback Strategy Notice -->
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-primary-600 text-sm"></i>
+            <span><strong>Cơ chế tự động:</strong> Nếu model hiện tại bị <code>429 Quota</code> hoặc quá tải, hệ thống sẽ tự động thử lại ngay với model kế tiếp mà không làm mất dữ liệu đã làm.</span>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn-primary w-full py-2.5 justify-center">
+            <i class="fa-solid fa-floppy-disk mr-1"></i> Lưu & Bắt Đầu Sử Dụng App
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Backup & Restore -->
+  <div class="modal-overlay" id="modal-backup">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-database text-blue-600 mr-2"></i> Sao Lưu & Phục Hồi Dữ Liệu</h3>
+        <button type="button" class="modal-close-btn" data-close-modal="modal-backup">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+          <h4 class="text-xs font-bold text-slate-800 uppercase">Xuất Bản Sao Lưu (Backup JSON)</h4>
+          <p class="text-xs text-slate-500">Tải về toàn bộ danh sách lớp, học sinh, điểm sao, đề thi và bài làm ra file .json.</p>
+          <button type="button" class="btn-primary text-xs" id="btn-export-backup">
+            <i class="fa-solid fa-download mr-1"></i> Xuất File Sao Lưu Ngay
+          </button>
+        </div>
+
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+          <h4 class="text-xs font-bold text-slate-800 uppercase">Khôi Phục Từ File Sao Lưu</h4>
+          <input type="file" id="file-import-backup" accept=".json" class="text-xs text-slate-600">
+        </div>
+
+        <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl space-y-2">
+          <h4 class="text-xs font-bold text-rose-800 uppercase">Khôi Phục Dữ Liệu Gốc</h4>
+          <p class="text-xs text-rose-600">Xóa các chỉnh sửa tạm và đặt lại dữ liệu mẫu sư phạm ban đầu.</p>
+          <button type="button" class="btn-secondary text-xs text-rose-700 border-rose-200 hover:bg-rose-100" id="btn-reset-demo-data">
+            <i class="fa-solid fa-rotate-left mr-1"></i> Khôi Phục Dữ Liệu Mẫu
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-close-modal="modal-backup">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Tutor Drawer -->
+  <aside class="ai-tutor-drawer" id="ai-tutor-drawer">
+    <div class="drawer-header">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+          <i class="fa-solid fa-robot text-sm"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold">Gia Sư AI EduSmart</h3>
+          <p class="text-[10px] text-indigo-100">Cố vấn giải đáp học tập 24/7</p>
+        </div>
+      </div>
+      <button type="button" class="text-white hover:text-slate-200 text-lg" id="btn-close-ai-tutor">&times;</button>
+    </div>
+
+    <div class="chat-history" id="ai-chat-history">
+      <div class="chat-message bot">
+        <div class="chat-avatar bg-indigo-500 text-white"><i class="fa-solid fa-robot"></i></div>
+        <div class="chat-bubble">
+          Xin chào! Thầy là <strong>Gia sư AI EduSmart</strong>. Em đang gặp khó khăn ở bài tập môn nào (Toán, Lý, Tiếng Anh...)? Hãy hỏi thầy nhé!
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Prompt Chips -->
+    <div class="chat-chips-row">
+      <button type="button" class="chat-chip">Trục đối xứng parabol là gì?</button>
+      <button type="button" class="chat-chip">Phân biệt thì Hiện tại hoàn thành</button>
+      <button type="button" class="chat-chip">Công thức lực ma sát trượt</button>
+      <button type="button" class="chat-chip">Cách tính GTLN của hàm số</button>
+    </div>
+
+    <div class="chat-input-row">
+      <input type="text" class="form-input flex-1 text-xs" id="ai-chat-input" placeholder="Hỏi gia sư AI về bài tập...">
+      <button type="button" class="btn-primary py-2 px-3 text-xs" id="ai-chat-send-btn">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- App Script -->
+  <script src="./app.js"></script>
+</body>
+</html>
